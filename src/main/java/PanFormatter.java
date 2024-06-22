@@ -118,6 +118,7 @@ public class PanFormatter {
     List<String> result = new ArrayList<>();
     for (InnConf innConf : listOfInnConfs) {
       if (doesPanMatchInnConfConstraints(panNumber, innConf)) {
+        LOGGER.info("Pan number {} was found to match {} card", panNumber, innConf.getIssuerName());
         result.add(innConf.getPanPattern());
       }
     }
@@ -180,8 +181,7 @@ public class PanFormatter {
   }
 
   private boolean doesPanPatternMatchExpectedRegex(InnConf innConf) {
-    String regexToMatch = EXPECTED_PATTERN_REGEX;
-    return innConf.getPanPattern().matches(regexToMatch);
+    return innConf.getPanPattern().matches(EXPECTED_PATTERN_REGEX);
   }
 
   private boolean doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(InnConf innConf) {
