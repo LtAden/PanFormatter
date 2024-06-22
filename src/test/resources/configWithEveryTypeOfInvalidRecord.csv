@@ -1,6 +1,6 @@
 Issuer Name;supported pan length;prefixLength;innRangeLow;innRangeHigh;pattern
-Diners Club International;14;2;38;39;#### ###### ####
-Maestro;18;6;600000;699999;Pattern not known
-Maestro;10;6;600000;699999;#### ###### ####
+Maestro;14;2;38;39;Pattern not known
+Maestro;14;2;38;39;#### ####### ####
 Diners Club International;14;5;38;39;#### ###### ####
 Diners Club International;4;5;38000;39000;####
+Diners Club International;14;2;38;39;#### ###### ####
