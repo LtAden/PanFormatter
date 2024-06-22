@@ -4,11 +4,13 @@ import lombok.Getter;
 
 import java.io.*;
 import java.sql.Array;
+import java.text.ParseException;
 import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.swing.text.MaskFormatter;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
@@ -23,13 +25,17 @@ public class PanFormatter {
    * @return
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
    */
-  public String formatPan(String panNumber) {
+  public String formatPan(String panNumber) throws ParseException {
     List<InnConf> configs = getConfiguration();
     String pattern = findMatchingPatternInConfigOrThrowException(configs, panNumber);
     return formatPanWithGivenPattern(panNumber, pattern);
   }
 
-  private String formatPanWithGivenPattern(String panNumber, String pattern) {}
+  private String formatPanWithGivenPattern(String panNumber, String pattern) throws ParseException {
+    MaskFormatter formatter = new MaskFormatter(pattern);
+    formatter.setValueContainsLiteralCharacters(false);
+    return formatter.valueToString(panNumber);
+  }
 
   private String findMatchingPatternInConfigOrThrowException(
       List<InnConf> listOfInnConfs, String panNumber) {
