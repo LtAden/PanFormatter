@@ -126,8 +126,7 @@ public class PanFormatter {
     if (!isPanPatternValid(innConf)) {
       LOGGER.info("Invalid pattern for InnConf {}", innConf);
       result = false;
-    }
-    if (!doesPatternHaveRequiredAmountOfPlaceholders(innConf)) {
+    } else if (!doesPatternHaveRequiredAmountOfPlaceholders(innConf)) {
       LOGGER.info(
           "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
       result = false;

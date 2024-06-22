@@ -1,6 +1,5 @@
 Issuer Name;supported pan length;prefixLength;innRangeLow;innRangeHigh;pattern
-SomeIssuer1;13;1;4;4;Pattern not known
-SomeIssuer2;14;1;4;4;Pattern not known
-SomeIssuer3;15;1;4;4;Pattern not known
-SomeIssuer4;17;1;4;4;Pattern not known
-SomeIssuer5;18;1;4;4;Pattern not known
+Maestro;14;2;38;39;Pattern not known
+Maestro;14;2;38;39;#### ####### ####
+Diners Club International;14;5;38;39;#### ###### ####
+Diners Club International;4;5;38000;39000;## ##
