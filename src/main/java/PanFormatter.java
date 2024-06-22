@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
+  private static final String COMMA_SEPARATOR = ",";
   private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
   private static final String EXPECTED_PATTERN_REGEX = "^#[#\\s]*$";
@@ -161,21 +162,26 @@ public class PanFormatter {
    */
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
+    StringBuilder issuesFound = new StringBuilder();
     if (!doesPanPatternMatchExpectedRegex(innConf)) {
-      LOGGER.info("Invalid pattern for InnConf {}", innConf);
+      issuesFound.append("Invalid pan pattern").append(COMMA_SEPARATOR);
       result = false;
     } else if (!doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(innConf)) {
-      LOGGER.info(
-          "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
+      issuesFound
+          .append("Amount of placeholder characters doesn't match supported pan size ")
+          .append(COMMA_SEPARATOR);
       result = false;
     }
     if (!doesInnRangeSizesMatchPrefixSize(innConf)) {
-      LOGGER.info("InnRange size doesn't match prefix size for InnConf {}", innConf);
+      issuesFound.append("InnRange sizes doesn't match prefix size").append(COMMA_SEPARATOR);
       result = false;
     }
     if (innConf.getPrefixLength() > innConf.getSupportedLength()) {
-      LOGGER.info("Prefix size bigger than supported pan length for InnConf {}", innConf);
+      issuesFound.append("Prefix size is bigger than supported pan length").append(COMMA_SEPARATOR);
       result = false;
+    }
+    if (!result) {
+      LOGGER.info("Following issues were found for InnConf object {}: {}", innConf, issuesFound);
     }
     return result;
   }
