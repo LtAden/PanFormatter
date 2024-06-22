@@ -1,9 +1,7 @@
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 
 import java.io.*;
-import java.sql.Array;
 import java.text.ParseException;
 import java.util.*;
 
@@ -125,12 +123,12 @@ public class PanFormatter {
       LOGGER.info("Unknown pattern for InnConf {}", innConf);
       result = false;
     }
-    if (!doesPatternHaveRequredAmountOfPlacehodlers(innConf)) {
+    if (!doesPatternHaveRequiredAmountOfPlaceholders(innConf)) {
       LOGGER.info(
           "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
       result = false;
     }
-    if (!doInnRangeSizesMatchPrefix(innConf)) {
+    if (!doesInnRangeSizesMatchPrefix(innConf)) {
       LOGGER.info("InnRange size doesn't match prefix size for InnConf {}", innConf);
       result = false;
     }
@@ -146,12 +144,12 @@ public class PanFormatter {
     return innConf.getPanPattern().matches(regexToMatch);
   }
 
-  private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf) {
+  private boolean doesPatternHaveRequiredAmountOfPlaceholders(InnConf innConf) {
     long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == '#').count();
     return xCountInPattern == innConf.getSupportedLength();
   }
 
-  private boolean doInnRangeSizesMatchPrefix(InnConf innConf) {
+  private boolean doesInnRangeSizesMatchPrefix(InnConf innConf) {
     int innRangeLowSize = String.valueOf(innConf.getInnPrefixLow()).length();
     int innRangeHighSize = String.valueOf(innConf.getInnPrefixHigh()).length();
     int innPrefixSize = innConf.getPrefixLength();
