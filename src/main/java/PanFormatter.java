@@ -66,36 +66,45 @@ public class PanFormatter {
     List<InnConf> result = new ArrayList<>();
     for (Map<String, String> map : listOfMappedRecords) {
       innConf = getObjectFromMap(map);
-      if(isInnConfObjectValid(innConf)){
+      if (isInnConfObjectValid(innConf)) {
         result.add(innConf);
       }
     }
     return result;
   }
 
-  private boolean isInnConfObjectValid(InnConf innConf){
+  private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
-    if(!innConf.getPanPattern().matches("^X[X\\s]*$")){
+    if (!innConf.getPanPattern().matches("^X[X\\s]*$")) {
       LOGGER.info("Unknown pattern for InnConf {}", innConf);
       result = false;
     }
-    if(!doesPatternHaveRequredAmountOfPlacehodlers(innConf)){
-      LOGGER.info("Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
+    if (!doesPatternHaveRequredAmountOfPlacehodlers(innConf)) {
+      LOGGER.info(
+          "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
       result = false;
     }
-    if(){
+    if (!doInnRangeSizesMatchPrefix(innConf)) {
       LOGGER.info("InnRange size doesn't match prefix size for InnConf {}", innConf);
       result = false;
     }
-    if(){
+    if (innConf.getPrefixLength() > innConf.getSupportedLength()) {
       LOGGER.info("Prefix size bigger than supported pan length for InnConf {}", innConf);
       result = false;
     }
+    return result;
   }
 
-  private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf){
+  private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf) {
     long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == 'X').count();
     return xCountInPattern == innConf.getSupportedLength();
+  }
+
+  private boolean doInnRangeSizesMatchPrefix(InnConf innConf) {
+    int innRangeLowSize = String.valueOf(innConf.getInnPrefixLow()).length();
+    int innRangeHighSize = String.valueOf(innConf.getInnPrefixHigh()).length();
+    int innPrefixSize = innConf.getPrefixLength();
+    return (innRangeLowSize == innPrefixSize) && (innRangeHighSize == innPrefixSize);
   }
 
   private InnConf getObjectFromMap(Map<String, String> map) {
@@ -109,7 +118,6 @@ public class PanFormatter {
   }
 
   @Data
-  @Getter
   @AllArgsConstructor
   private static class InnConf {
 
