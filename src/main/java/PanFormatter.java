@@ -40,9 +40,7 @@ public class PanFormatter {
       throw new IllegalStateException(
           "Unable to read the records from config file. Stacktrace: " + e);
     }
-
-    List<InnConf> result = getListOfInnConfFromMappedRecords(listOfMappedRecords);
-    return null;
+    return getListOfInnConfFromMappedRecords(listOfMappedRecords);
   }
 
   private List<Map<String, String>> getListOfMappedRecords() throws IOException {
@@ -78,7 +76,7 @@ public class PanFormatter {
 
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
-    if (!innConf.getPanPattern().matches("^X[X\\s]*$")) {
+    if (!innConf.getPanPattern().matches("^#[#\\s]*$")) {
       LOGGER.info("Unknown pattern for InnConf {}", innConf);
       result = false;
     }
@@ -99,7 +97,7 @@ public class PanFormatter {
   }
 
   private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf) {
-    long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == 'X').count();
+    long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == '#').count();
     return xCountInPattern == innConf.getSupportedLength();
   }
 
