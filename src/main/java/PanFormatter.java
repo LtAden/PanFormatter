@@ -13,10 +13,13 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
 
-// TODO document more complex methods
+// TODO config caching - pros and cons
 public class PanFormatter {
   private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
+  private static final String EXPECTED_PATTERN_REGEX = "^#[#\\s]*$";
+  private static final String CONFIG_FILE_SEPARATOR = ";";
+  private static final char PATTERN_PLACEHOLDER_CHARACTER = '#';
 
   public PanFormatter(String configFileName) {
     this.confFile = configFileName;
@@ -30,7 +33,7 @@ public class PanFormatter {
    */
   public String formatPan(String panNumber) throws ParseException {
     List<InnConf> configs = getConfiguration();
-    String pattern = findRecordThatMatchesPanOrThrowException(configs, panNumber);
+    String pattern = findPatternFromRecordThatMatchesPanOrThrowException(configs, panNumber);
     return formatPanWithGivenPattern(panNumber, pattern);
   }
 
@@ -47,7 +50,7 @@ public class PanFormatter {
     } catch (Exception e) {
       throw new IllegalStateException("Config file empty or does not exist");
     }
-    return getListOfInnConfObjectsFromMappedRecords(listOfMappedRecords);
+    return getListOfValidInnConfObjectsFromMappedRecords(listOfMappedRecords);
   }
 
   /**
@@ -57,21 +60,22 @@ public class PanFormatter {
    * @return List of Maps from provided config CSV
    */
   private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
-    try (BufferedReader br =
+    try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
-      String[] headers = br.readLine().split(";");
-      return br.lines()
-          .map(line -> line.split(";"))
+      String[] csvHeaders = reader.readLine().split(CONFIG_FILE_SEPARATOR);
+      return reader
+          .lines()
+          .map(line -> line.split(CONFIG_FILE_SEPARATOR))
           .map(
-              lineArray ->
-                  IntStream.range(0, lineArray.length)
+              csvLineArray ->
+                  IntStream.range(0, csvLineArray.length)
                       .boxed()
-                      .collect(toMap(i -> headers[i], i -> lineArray[i])))
+                      .collect(toMap(i -> csvHeaders[i], i -> csvLineArray[i])))
           .toList();
     }
   }
 
-  private List<InnConf> getListOfInnConfObjectsFromMappedRecords(
+  private List<InnConf> getListOfValidInnConfObjectsFromMappedRecords(
       List<Map<String, String>> listOfMappedRecords) {
     InnConf innConf;
     List<InnConf> result = new ArrayList<>();
@@ -98,7 +102,16 @@ public class PanFormatter {
         map.get("pattern"));
   }
 
-  private String findRecordThatMatchesPanOrThrowException(
+  /**
+   * Iterates through the list of InnConfs, and tries to match provided pan number to any of them.
+   * It adds all Patterns from InnConf objects that match given pan to a list.
+   *
+   * @throws UnsupportedOperationException - if none of InnConf match given pan number (empty map)
+   * @throws IllegalStateException - if more than one InnConf matches given pan number (map size
+   *     bigger than 1)
+   * @return Pattern from InnConf object that matches given pan
+   */
+  private String findPatternFromRecordThatMatchesPanOrThrowException(
       List<InnConf> listOfInnConfs, String panNumber) {
     List<String> result = new ArrayList<>();
     for (InnConf innConf : listOfInnConfs) {
@@ -119,25 +132,36 @@ public class PanFormatter {
     boolean result = true;
     if (!(panNumber.length() == innConf.getSupportedLength())) {
       result = false;
-    } else if (!isPanNumberPrefixMatchInnRange(panNumber, innConf)) {
+    } else if (!isPanNumberPrefixInRange(panNumber, innConf)) {
       result = false;
     }
     return result;
   }
 
-  private boolean isPanNumberPrefixMatchInnRange(String panNumber, InnConf innConf) {
+  private boolean isPanNumberPrefixInRange(String panNumber, InnConf innConf) {
     String panNumberPrefix = panNumber.substring(0, innConf.getPrefixLength());
     int panNumberPrefixValue = Integer.parseInt(panNumberPrefix);
     return (panNumberPrefixValue >= innConf.getInnPrefixLow())
         && (panNumberPrefixValue <= innConf.getInnPrefixHigh());
   }
 
+  /**
+   * Preforms a few checks on InnConf objects to confirm it's valid. It checks that InnObject: - Pan
+   * Patter is a series of Placeholer characters (#) and Spaces; - That amount of Placeholder
+   * characters in Pan Pattern match the supported pan length - that prefix size is just as long as
+   * both inn range parameters - that prefix is not longer than supported pan length
+   *
+   * <p>Any failure is logged, but following checks are still evaluated - this way all mistakes for
+   * given record can be fixed right away.
+   *
+   * @return true if no problems were found, false otherwise
+   */
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
     if (!doesPanPatternMatchExpectedRegex(innConf)) {
       LOGGER.info("Invalid pattern for InnConf {}", innConf);
       result = false;
-    } else if (!doesAmountOfPatternPlaceholdersMatchSupportedPanLength(innConf)) {
+    } else if (!doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(innConf)) {
       LOGGER.info(
           "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
       result = false;
@@ -154,12 +178,13 @@ public class PanFormatter {
   }
 
   private boolean doesPanPatternMatchExpectedRegex(InnConf innConf) {
-    String regexToMatch = "^#[#\\s]*$";
+    String regexToMatch = EXPECTED_PATTERN_REGEX;
     return innConf.getPanPattern().matches(regexToMatch);
   }
 
-  private boolean doesAmountOfPatternPlaceholdersMatchSupportedPanLength(InnConf innConf) {
-    long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == '#').count();
+  private boolean doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(InnConf innConf) {
+    long xCountInPattern =
+        innConf.getPanPattern().chars().filter(ch -> ch == PATTERN_PLACEHOLDER_CHARACTER).count();
     return xCountInPattern == innConf.getSupportedLength();
   }
 

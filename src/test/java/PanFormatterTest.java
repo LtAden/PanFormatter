@@ -52,9 +52,8 @@ class PanFormatterTest {
     PanFormatter formatter = new PanFormatter("configFileThatDoesNotExist.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
-            .as("Check if exception is thrown when there are no valid records in config file")
-            .hasMessage("Config file empty or does not exist")
-            .isInstanceOf(IllegalStateException.class);
+        .as("Check if exception is thrown when there are no valid records in config file")
+        .hasMessage("Config file empty or does not exist")
+        .isInstanceOf(IllegalStateException.class);
   }
-
 }
