@@ -63,9 +63,39 @@ public class PanFormatter {
   private List<InnConf> getListOfInnConfFromMappedRecords(
       List<Map<String, String>> listOfMappedRecords) {
     InnConf innConf;
+    List<InnConf> result = new ArrayList<>();
     for (Map<String, String> map : listOfMappedRecords) {
       innConf = getObjectFromMap(map);
+      if(isInnConfObjectValid(innConf)){
+        result.add(innConf);
+      }
     }
+    return result;
+  }
+
+  private boolean isInnConfObjectValid(InnConf innConf){
+    boolean result = true;
+    if(!innConf.getPanPattern().matches("^X[X\\s]*$")){
+      LOGGER.info("Unknown pattern for InnConf {}", innConf);
+      result = false;
+    }
+    if(!doesPatternHaveRequredAmountOfPlacehodlers(innConf)){
+      LOGGER.info("Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
+      result = false;
+    }
+    if(){
+      LOGGER.info("InnRange size doesn't match prefix size for InnConf {}", innConf);
+      result = false;
+    }
+    if(){
+      LOGGER.info("Prefix size bigger than supported pan length for InnConf {}", innConf);
+      result = false;
+    }
+  }
+
+  private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf){
+    long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == 'X').count();
+    return xCountInPattern == innConf.getSupportedLength();
   }
 
   private InnConf getObjectFromMap(Map<String, String> map) {
