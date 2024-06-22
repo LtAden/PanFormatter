@@ -1,0 +1,3 @@
+Issuer Name;supported pan length;prefixLength;innRangeLow;innRangeHigh;pattern
+Visa (incl. VPay);16;1;4;4;#### #### #### ####
+Definitely Not Visa;16;1;4;4;#### #### #### ####

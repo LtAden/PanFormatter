@@ -12,7 +12,8 @@ import javax.swing.text.MaskFormatter;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
-    //TODO document more complex methods
+
+// TODO document more complex methods
 public class PanFormatter {
   private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
@@ -83,8 +84,7 @@ public class PanFormatter {
     try {
       listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
     } catch (Exception e) {
-      throw new IllegalStateException(
-          "Unable to read the records from config file. Stacktrace: " + e);
+      throw new IllegalStateException("Unable to read the records from config file");
     }
     return getListOfInnConfFromMappedRecords(listOfMappedRecords);
   }
