@@ -1,11 +1,20 @@
 /*
 
-*/
+ */
 
+import com.opencsv.CSVReader;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
     private static final String CONF_FILE = "conf.csv";
@@ -17,7 +26,7 @@ public class PanFormatter {
      * @return
      * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
      */
-    public String formatPan(String panNumber) throws UnsupportedOperationException {
+    public String formatPan(String panNumber) throws UnsupportedOperationException, IOException {
         List<InnConf> configs = getConfiguration();
         return null;
     }
@@ -27,8 +36,19 @@ public class PanFormatter {
      *
      * @return Configuration of supported patterns related to IIN Ranges.
      */
-    private List<InnConf> getConfiguration() {
+    public List<InnConf> getConfiguration() {
         return null;
+    }
+
+    private List<Map<String, String>> getListOfMappedRecords() throws IOException {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                this.getClass().getResourceAsStream(CONF_FILE)))) {
+            String[] headers = br.readLine().split(";");
+            return br.lines().map(line -> line.split(","))
+                    .map(lineArray -> IntStream.range(0, lineArray.length)
+                            .boxed()
+                            .collect(toMap(i -> headers[i], i -> lineArray[i]))).toList();
+        }
     }
 
     @Data
