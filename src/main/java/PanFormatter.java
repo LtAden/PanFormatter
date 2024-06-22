@@ -76,7 +76,7 @@ public class PanFormatter {
 
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
-    if (!innConf.getPanPattern().matches("^#[#\\s]*$")) {
+    if (!isPanPatternValid(innConf)) {
       LOGGER.info("Unknown pattern for InnConf {}", innConf);
       result = false;
     }
@@ -94,6 +94,11 @@ public class PanFormatter {
       result = false;
     }
     return result;
+  }
+
+  private boolean isPanPatternValid(InnConf innConf){
+    String regexToMatch = "^#[#\\s]*$";
+    return innConf.getPanPattern().matches(regexToMatch);
   }
 
   private boolean doesPatternHaveRequredAmountOfPlacehodlers(InnConf innConf) {
