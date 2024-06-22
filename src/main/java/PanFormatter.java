@@ -30,7 +30,7 @@ public class PanFormatter {
    */
   public String formatPan(String panNumber) throws ParseException {
     List<InnConf> configs = getConfiguration();
-    String pattern = findMatchingPatternInConfigOrThrowException(configs, panNumber);
+    String pattern = findRecordThatMatchesPanOrThrowException(configs, panNumber);
     return formatPanWithGivenPattern(panNumber, pattern);
   }
 
@@ -47,7 +47,7 @@ public class PanFormatter {
     } catch (Exception e) {
       throw new IllegalStateException("Config file empty or does not exist");
     }
-    return getListOfInnConfFromMappedRecords(listOfMappedRecords);
+    return getListOfInnConfObjectsFromMappedRecords(listOfMappedRecords);
   }
 
   /**
@@ -71,12 +71,12 @@ public class PanFormatter {
     }
   }
 
-  private List<InnConf> getListOfInnConfFromMappedRecords(
+  private List<InnConf> getListOfInnConfObjectsFromMappedRecords(
       List<Map<String, String>> listOfMappedRecords) {
     InnConf innConf;
     List<InnConf> result = new ArrayList<>();
     for (Map<String, String> map : listOfMappedRecords) {
-      innConf = getObjectFromMap(map);
+      innConf = getInnConfObjectFromMap(map);
       if (isInnConfObjectValid(innConf)) {
         result.add(innConf);
       }
@@ -88,7 +88,7 @@ public class PanFormatter {
     return result;
   }
 
-  private InnConf getObjectFromMap(Map<String, String> map) {
+  private InnConf getInnConfObjectFromMap(Map<String, String> map) {
     return new InnConf(
         map.get("Issuer Name"),
         Integer.parseInt(map.get("supported pan length")),
@@ -98,11 +98,11 @@ public class PanFormatter {
         map.get("pattern"));
   }
 
-  private String findMatchingPatternInConfigOrThrowException(
+  private String findRecordThatMatchesPanOrThrowException(
       List<InnConf> listOfInnConfs, String panNumber) {
     List<String> result = new ArrayList<>();
     for (InnConf innConf : listOfInnConfs) {
-      if (panMatchesInnConf(panNumber, innConf)) {
+      if (doesPanMatchInnConfConstraints(panNumber, innConf)) {
         result.add(innConf.getPanPattern());
       }
     }
@@ -115,17 +115,17 @@ public class PanFormatter {
     return result.get(0);
   }
 
-  private boolean panMatchesInnConf(String panNumber, InnConf innConf) {
+  private boolean doesPanMatchInnConfConstraints(String panNumber, InnConf innConf) {
     boolean result = true;
     if (!(panNumber.length() == innConf.getSupportedLength())) {
       result = false;
-    } else if (!panNumberMatchesPrefixRange(panNumber, innConf)) {
+    } else if (!isPanNumberPrefixMatchInnRange(panNumber, innConf)) {
       result = false;
     }
     return result;
   }
 
-  private boolean panNumberMatchesPrefixRange(String panNumber, InnConf innConf) {
+  private boolean isPanNumberPrefixMatchInnRange(String panNumber, InnConf innConf) {
     String panNumberPrefix = panNumber.substring(0, innConf.getPrefixLength());
     int panNumberPrefixValue = Integer.parseInt(panNumberPrefix);
     return (panNumberPrefixValue >= innConf.getInnPrefixLow())
@@ -134,15 +134,15 @@ public class PanFormatter {
 
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
-    if (!isPanPatternValid(innConf)) {
+    if (!doesPanPatternMatchExpectedRegex(innConf)) {
       LOGGER.info("Invalid pattern for InnConf {}", innConf);
       result = false;
-    } else if (!doesPatternHaveRequiredAmountOfPlaceholders(innConf)) {
+    } else if (!doesAmountOfPatternPlaceholdersMatchSupportedPanLength(innConf)) {
       LOGGER.info(
           "Amount of placeholder characters doesn't match supported size for InnConf {}", innConf);
       result = false;
     }
-    if (!doesInnRangeSizesMatchPrefix(innConf)) {
+    if (!doesInnRangeSizesMatchPrefixSize(innConf)) {
       LOGGER.info("InnRange size doesn't match prefix size for InnConf {}", innConf);
       result = false;
     }
@@ -153,17 +153,17 @@ public class PanFormatter {
     return result;
   }
 
-  private boolean isPanPatternValid(InnConf innConf) {
+  private boolean doesPanPatternMatchExpectedRegex(InnConf innConf) {
     String regexToMatch = "^#[#\\s]*$";
     return innConf.getPanPattern().matches(regexToMatch);
   }
 
-  private boolean doesPatternHaveRequiredAmountOfPlaceholders(InnConf innConf) {
+  private boolean doesAmountOfPatternPlaceholdersMatchSupportedPanLength(InnConf innConf) {
     long xCountInPattern = innConf.getPanPattern().chars().filter(ch -> ch == '#').count();
     return xCountInPattern == innConf.getSupportedLength();
   }
 
-  private boolean doesInnRangeSizesMatchPrefix(InnConf innConf) {
+  private boolean doesInnRangeSizesMatchPrefixSize(InnConf innConf) {
     int innRangeLowSize = String.valueOf(innConf.getInnPrefixLow()).length();
     int innRangeHighSize = String.valueOf(innConf.getInnPrefixHigh()).length();
     int innPrefixSize = innConf.getPrefixLength();
