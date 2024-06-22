@@ -24,7 +24,14 @@ public class PanFormatter {
    */
   public String formatPan(String panNumber) {
     List<InnConf> configs = getConfiguration();
-    return null;
+    String pattern = findMatchingPatternInConfigOrThrowException(panNumber);
+    return formatPanWithGivenPattern(panNumber, pattern);
+  }
+
+  private String formatPanWithGivenPattern(String panNumber, String pattern) {
+  }
+
+  private String findMatchingPatternInConfigOrThrowException(List<InnConf> listOfInnConfs, String panNumber) {
   }
 
   /**
