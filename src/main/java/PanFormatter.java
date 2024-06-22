@@ -12,9 +12,9 @@ import javax.swing.text.MaskFormatter;
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
-
+    //TODO document more complex methods
 public class PanFormatter {
-  private String confFile;
+  private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
 
   public PanFormatter(String configFileName) {
