@@ -1,23 +1,18 @@
-/*
-
- */
-
-import com.opencsv.CSVReader;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.stream.IntStream;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
     private static final String CONF_FILE = "conf.csv";
+    private static final Logger logger = LogManager.getLogger(PanFormatter.class);
 
     /**
      * Validates PAN Number. If it is supported returns formatted PAN.
@@ -26,7 +21,7 @@ public class PanFormatter {
      * @return
      * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
      */
-    public String formatPan(String panNumber){
+    public String formatPan(String panNumber) {
         List<InnConf> configs = getConfiguration();
         return null;
     }
@@ -40,11 +35,11 @@ public class PanFormatter {
         List<Map<String, String>> listOfMappedRecords;
         try {
             listOfMappedRecords = getListOfMappedRecords();
-        } catch(IOException e){
+        } catch (IOException e) {
             throw new IllegalStateException("Unable to read the records from config file. Stacktrace: " + e);
         }
 
-        List<InnConf> result = getListofInnConfFromMappedRecords(listOfMappedRecords);
+        List<InnConf> result = getListOfInnConfFromMappedRecords(listOfMappedRecords);
         return null;
     }
 
@@ -59,7 +54,7 @@ public class PanFormatter {
         }
     }
 
-    private List<InnConf> getListofInnConfFromMappedRecords(List<Map<String, String>> listOfMappedRecords){
+    private List<InnConf> getListOfInnConfFromMappedRecords(List<Map<String, String>> listOfMappedRecords) {
         return null;
     }
 
