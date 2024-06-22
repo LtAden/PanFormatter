@@ -29,38 +29,40 @@ public class PanFormatter {
     return formatPanWithGivenPattern(panNumber, pattern);
   }
 
-  private String formatPanWithGivenPattern(String panNumber, String pattern) {
-  }
+  private String formatPanWithGivenPattern(String panNumber, String pattern) {}
 
-  private String findMatchingPatternInConfigOrThrowException(List<InnConf> listOfInnConfs, String panNumber) {
+  private String findMatchingPatternInConfigOrThrowException(
+      List<InnConf> listOfInnConfs, String panNumber) {
     List<String> result = new ArrayList<>();
-    for(InnConf innConf : listOfInnConfs){
-      if(panMatchesInnConf(panNumber, innConf)){
+    for (InnConf innConf : listOfInnConfs) {
+      if (panMatchesInnConf(panNumber, innConf)) {
         result.add(innConf.getPanPattern());
       }
     }
-    if(result.size() == 0){
+    if (result.size() == 0) {
       throw new UnsupportedOperationException("Failed to find pattern matching given pan number");
-    } else if (result.size() > 1){
-      throw new IllegalStateException("More than one match found for given pan number. Configuration is invalid");
+    } else if (result.size() > 1) {
+      throw new IllegalStateException(
+          "More than one match found for given pan number. Configuration is invalid");
     }
     return result.get(0);
   }
 
   private boolean panMatchesInnConf(String panNumber, InnConf innConf) {
     boolean result = true;
-    if(!(panNumber.length() == innConf.getSupportedLength())){
+    if (!(panNumber.length() == innConf.getSupportedLength())) {
       result = false;
-    } else if (!panNumberMatchesPrefixRange(panNumber, innConf)){
+    } else if (!panNumberMatchesPrefixRange(panNumber, innConf)) {
       result = false;
     }
     return result;
   }
 
-  private boolean panNumberMatchesPrefixRange(String panNumber, InnConf innConf){
+  private boolean panNumberMatchesPrefixRange(String panNumber, InnConf innConf) {
     String panNumberPrefix = panNumber.substring(0, innConf.getPrefixLength());
     int panNumberPrefixValue = Integer.parseInt(panNumberPrefix);
-    return (panNumberPrefixValue >= innConf.getInnPrefixLow()) && (panNumberPrefixValue <= innConf.getInnPrefixHigh());
+    return (panNumberPrefixValue >= innConf.getInnPrefixLow())
+        && (panNumberPrefixValue <= innConf.getInnPrefixHigh());
   }
 
   /**
@@ -104,8 +106,9 @@ public class PanFormatter {
         result.add(innConf);
       }
     }
-    if(result.isEmpty()){
-      throw new IllegalStateException("No valid InnConf objects could be collected from provided config file");
+    if (result.isEmpty()) {
+      throw new IllegalStateException(
+          "No valid InnConf objects could be collected from provided config file");
     }
     return result;
   }
@@ -132,7 +135,7 @@ public class PanFormatter {
     return result;
   }
 
-  private boolean isPanPatternValid(InnConf innConf){
+  private boolean isPanPatternValid(InnConf innConf) {
     String regexToMatch = "^#[#\\s]*$";
     return innConf.getPanPattern().matches(regexToMatch);
   }
