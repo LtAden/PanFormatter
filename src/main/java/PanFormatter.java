@@ -17,7 +17,7 @@ public class PanFormatter {
   private String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
 
-  public PanFormatter(String configFileName){
+  public PanFormatter(String configFileName) {
     this.confFile = configFileName;
   }
 
@@ -78,18 +78,18 @@ public class PanFormatter {
    *
    * @return Configuration of supported patterns related to IIN Ranges.
    */
-  public List<InnConf> getConfiguration() {
+  private List<InnConf> getConfiguration() {
     List<Map<String, String>> listOfMappedRecords;
     try {
-      listOfMappedRecords = getListOfMappedRecords();
-    } catch (IOException e) {
+      listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
+    } catch (Exception e) {
       throw new IllegalStateException(
           "Unable to read the records from config file. Stacktrace: " + e);
     }
     return getListOfInnConfFromMappedRecords(listOfMappedRecords);
   }
 
-  private List<Map<String, String>> getListOfMappedRecords() throws IOException {
+  private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
     try (BufferedReader br =
         new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
       String[] headers = br.readLine().split(";");
