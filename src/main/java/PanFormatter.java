@@ -1,11 +1,15 @@
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
@@ -55,11 +59,19 @@ public class PanFormatter {
     }
 
     private List<InnConf> getListOfInnConfFromMappedRecords(List<Map<String, String>> listOfMappedRecords) {
-        return null;
+        InnConf innConf;
+        for (Map<String, String> map : listOfMappedRecords) {
+            innConf = getObjectFromMap(map);
+        }
+    }
+
+    private InnConf getObjectFromMap(Map<String, String> map) {
+        return new InnConf(map.get("Issuer Name"), Integer.parseInt(map.get("supported pan length")), Integer.parseInt(map.get("prefixLength")), Integer.parseInt(map.get("innRangeLow")), Integer.parseInt(map.get("innRangeHigh")), map.get("pattern"));
     }
 
     @Data
-    @RequiredArgsConstructor
+    @Getter
+    @AllArgsConstructor
     private static class InnConf {
 
         /**
