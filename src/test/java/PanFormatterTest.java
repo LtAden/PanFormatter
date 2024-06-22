@@ -46,4 +46,15 @@ class PanFormatterTest {
         .hasMessage("No valid InnConf objects could be collected from provided config file")
         .isInstanceOf(IllegalStateException.class);
   }
+
+  @Test
+  void formatPanThrowsExceptionWhenConfigFileIsEmpty() throws ParseException {
+    PanFormatter formatter = new PanFormatter("configFileThatDoesNotExist.csv");
+    String input = "4444444444444444";
+    assertThatThrownBy(() -> formatter.formatPan(input))
+            .as("Check if exception is thrown when there are no valid records in config file")
+            .hasMessage("Config file empty or does not exist")
+            .isInstanceOf(IllegalStateException.class);
+  }
+
 }

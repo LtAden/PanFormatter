@@ -84,7 +84,7 @@ public class PanFormatter {
     try {
       listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
     } catch (Exception e) {
-      throw new IllegalStateException("Unable to read the records from config file");
+      throw new IllegalStateException("Config file empty or does not exist");
     }
     return getListOfInnConfFromMappedRecords(listOfMappedRecords);
   }
