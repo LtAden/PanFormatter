@@ -14,8 +14,12 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
-  private static final String CONF_FILE = "conf.csv";
+  private String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
+
+  public PanFormatter(String configFileName){
+    this.confFile = configFileName;
+  }
 
   /**
    * Validates PAN Number. If it is supported returns formatted PAN. Otherwise raises exception.
@@ -87,7 +91,7 @@ public class PanFormatter {
 
   private List<Map<String, String>> getListOfMappedRecords() throws IOException {
     try (BufferedReader br =
-        new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(CONF_FILE)))) {
+        new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
       String[] headers = br.readLine().split(";");
       return br.lines()
           .map(line -> line.split(";"))
