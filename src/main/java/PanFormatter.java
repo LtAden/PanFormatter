@@ -13,13 +13,13 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
 
-// TODO config caching - pros and cons
 public class PanFormatter {
   private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
   private static final String EXPECTED_PATTERN_REGEX = "^#[#\\s]*$";
   private static final String CONFIG_FILE_SEPARATOR = ";";
   private static final char PATTERN_PLACEHOLDER_CHARACTER = '#';
+  private List<InnConf> configs;
 
   public PanFormatter(String configFileName) {
     this.confFile = configFileName;
@@ -32,7 +32,9 @@ public class PanFormatter {
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
    */
   public String formatPan(String panNumber) throws ParseException {
-    List<InnConf> configs = getConfiguration();
+    if (this.configs == null) {
+      this.configs = getConfiguration();
+    }
     String pattern = findPatternFromRecordThatMatchesPanOrThrowException(configs, panNumber);
     return formatPanWithGivenPattern(panNumber, pattern);
   }
