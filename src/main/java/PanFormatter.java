@@ -85,6 +85,9 @@ output:
 3012 299449 4222
 */
 
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
 
 public class PanFormatter {
@@ -93,20 +96,22 @@ public class PanFormatter {
     /**
      * Validates PAN Number. If it is supported returns formatted PAN.
      * Otherwise raises exception.
+     *
      * @return
      * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
      */
-    public String formatPan(String panNumber) throws UnsupportedOperationException{
+    public String formatPan(String panNumber) throws UnsupportedOperationException {
         List<InnConf> configs = getConfiguration();
-        //...
+        return null;
     }
 
     /**
      * Reads configuration from CSV file and map it to list of {@link InnConf} objects.
+     *
      * @return Configuration of supported patterns related to IIN Ranges.
      */
-    private List<InnConf> getConfiguration(){
-       //...
+    private List<InnConf> getConfiguration() {
+        return null;
     }
 
     @Data
