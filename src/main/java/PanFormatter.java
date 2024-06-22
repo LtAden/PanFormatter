@@ -70,6 +70,9 @@ public class PanFormatter {
         result.add(innConf);
       }
     }
+    if(result.isEmpty()){
+      throw new IllegalStateException("No valid InnConf objects could be collected from provided config file");
+    }
     return result;
   }
 
