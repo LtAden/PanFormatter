@@ -124,7 +124,7 @@ public class PanFormatter {
   private boolean isInnConfObjectValid(InnConf innConf) {
     boolean result = true;
     if (!isPanPatternValid(innConf)) {
-      LOGGER.info("Unknown pattern for InnConf {}", innConf);
+      LOGGER.info("Invalid pattern for InnConf {}", innConf);
       result = false;
     }
     if (!doesPatternHaveRequiredAmountOfPlaceholders(innConf)) {
