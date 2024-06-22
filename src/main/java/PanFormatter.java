@@ -23,9 +23,9 @@ public class PanFormatter {
   }
 
   /**
-   * Validates PAN Number. If it is supported returns formatted PAN. Otherwise raises exception.
+   * Validates PAN Number. If it is supported returns formatted PAN. Otherwise, raises exception.
    *
-   * @return
+   * @return PAN number formatted to found format
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
    */
   public String formatPan(String panNumber) throws ParseException {
@@ -34,10 +34,68 @@ public class PanFormatter {
     return formatPanWithGivenPattern(panNumber, pattern);
   }
 
-  private String formatPanWithGivenPattern(String panNumber, String pattern) throws ParseException {
-    MaskFormatter formatter = new MaskFormatter(pattern);
-    formatter.setValueContainsLiteralCharacters(false);
-    return formatter.valueToString(panNumber);
+  /**
+   * Reads configuration from CSV file and map it to list of {@link InnConf} objects.
+   *
+   * @return Configuration of supported patterns related to IIN Ranges.
+   * @throws IllegalStateException - when config file could not be found or is empty
+   */
+  private List<InnConf> getConfiguration() {
+    List<Map<String, String>> listOfMappedRecords;
+    try {
+      listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
+    } catch (Exception e) {
+      throw new IllegalStateException("Config file empty or does not exist");
+    }
+    return getListOfInnConfFromMappedRecords(listOfMappedRecords);
+  }
+
+  /**
+   * Reads config file from resources, takes headers line as a source of map keys, and then converts
+   * all the lines in the file to arrays, maps them using headers and collects them to a list.
+   *
+   * @return List of Maps from provided config CSV
+   */
+  private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
+    try (BufferedReader br =
+        new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
+      String[] headers = br.readLine().split(";");
+      return br.lines()
+          .map(line -> line.split(";"))
+          .map(
+              lineArray ->
+                  IntStream.range(0, lineArray.length)
+                      .boxed()
+                      .collect(toMap(i -> headers[i], i -> lineArray[i])))
+          .toList();
+    }
+  }
+
+  private List<InnConf> getListOfInnConfFromMappedRecords(
+      List<Map<String, String>> listOfMappedRecords) {
+    InnConf innConf;
+    List<InnConf> result = new ArrayList<>();
+    for (Map<String, String> map : listOfMappedRecords) {
+      innConf = getObjectFromMap(map);
+      if (isInnConfObjectValid(innConf)) {
+        result.add(innConf);
+      }
+    }
+    if (result.isEmpty()) {
+      throw new IllegalStateException(
+          "No valid InnConf objects could be collected from provided config file");
+    }
+    return result;
+  }
+
+  private InnConf getObjectFromMap(Map<String, String> map) {
+    return new InnConf(
+        map.get("Issuer Name"),
+        Integer.parseInt(map.get("supported pan length")),
+        Integer.parseInt(map.get("prefixLength")),
+        Integer.parseInt(map.get("innRangeLow")),
+        Integer.parseInt(map.get("innRangeHigh")),
+        map.get("pattern"));
   }
 
   private String findMatchingPatternInConfigOrThrowException(
@@ -72,53 +130,6 @@ public class PanFormatter {
     int panNumberPrefixValue = Integer.parseInt(panNumberPrefix);
     return (panNumberPrefixValue >= innConf.getInnPrefixLow())
         && (panNumberPrefixValue <= innConf.getInnPrefixHigh());
-  }
-
-  /**
-   * Reads configuration from CSV file and map it to list of {@link InnConf} objects.
-   *
-   * @return Configuration of supported patterns related to IIN Ranges.
-   */
-  private List<InnConf> getConfiguration() {
-    List<Map<String, String>> listOfMappedRecords;
-    try {
-      listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
-    } catch (Exception e) {
-      throw new IllegalStateException("Config file empty or does not exist");
-    }
-    return getListOfInnConfFromMappedRecords(listOfMappedRecords);
-  }
-
-  private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
-    try (BufferedReader br =
-        new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
-      String[] headers = br.readLine().split(";");
-      return br.lines()
-          .map(line -> line.split(";"))
-          .map(
-              lineArray ->
-                  IntStream.range(0, lineArray.length)
-                      .boxed()
-                      .collect(toMap(i -> headers[i], i -> lineArray[i])))
-          .toList();
-    }
-  }
-
-  private List<InnConf> getListOfInnConfFromMappedRecords(
-      List<Map<String, String>> listOfMappedRecords) {
-    InnConf innConf;
-    List<InnConf> result = new ArrayList<>();
-    for (Map<String, String> map : listOfMappedRecords) {
-      innConf = getObjectFromMap(map);
-      if (isInnConfObjectValid(innConf)) {
-        result.add(innConf);
-      }
-    }
-    if (result.isEmpty()) {
-      throw new IllegalStateException(
-          "No valid InnConf objects could be collected from provided config file");
-    }
-    return result;
   }
 
   private boolean isInnConfObjectValid(InnConf innConf) {
@@ -159,14 +170,10 @@ public class PanFormatter {
     return (innRangeLowSize == innPrefixSize) && (innRangeHighSize == innPrefixSize);
   }
 
-  private InnConf getObjectFromMap(Map<String, String> map) {
-    return new InnConf(
-        map.get("Issuer Name"),
-        Integer.parseInt(map.get("supported pan length")),
-        Integer.parseInt(map.get("prefixLength")),
-        Integer.parseInt(map.get("innRangeLow")),
-        Integer.parseInt(map.get("innRangeHigh")),
-        map.get("pattern"));
+  private String formatPanWithGivenPattern(String panNumber, String pattern) throws ParseException {
+    MaskFormatter formatter = new MaskFormatter(pattern);
+    formatter.setValueContainsLiteralCharacters(false);
+    return formatter.valueToString(panNumber);
   }
 
   @Data
