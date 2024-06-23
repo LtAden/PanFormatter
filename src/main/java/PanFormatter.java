@@ -62,7 +62,8 @@ public class PanFormatter {
    * Reads config file from resources, takes headers line as a source of map keys, and then converts
    * all the lines in the file to arrays, maps them using headers and collects them to a list.
    *
-   * @throws IOException - if file is not found
+   * @throws IOException - when there was a problem reading a file
+   * @throws NullPointerException - when file is missing or empty
    * @return List of Maps from provided config CSV
    */
   private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
