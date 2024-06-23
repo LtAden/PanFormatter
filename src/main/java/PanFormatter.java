@@ -32,14 +32,17 @@ public class PanFormatter {
    * @param panNumber - pan Number which is to be formatted
    * @return PAN number formatted to found format
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
-   * @throws ParseException - when there was a problem during parsing
    */
-  public String formatPan(String panNumber) throws ParseException {
+  public String formatPan(String panNumber){
     if (this.configs == null) {
       this.configs = getConfiguration();
     }
     String pattern = findPatternFromRecordThatMatchesPanOrThrowException(configs, panNumber);
-    return formatPanWithGivenPattern(panNumber, pattern);
+    try {
+      return formatPanWithGivenPattern(panNumber, pattern);
+    } catch (ParseException e) {
+      throw new UnsupportedOperationException("Failed to parse pan number to format: ", e);
+    }
   }
 
   /**

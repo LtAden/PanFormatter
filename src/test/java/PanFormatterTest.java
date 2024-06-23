@@ -1,14 +1,12 @@
 import org.junit.jupiter.api.Test;
 
-import java.text.ParseException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PanFormatterTest {
 
   @Test
-  void formatPanWhenNumberCanBeMatchedInGivenConfiguration() throws ParseException {
+  void formatPanWhenNumberCanBeMatchedInGivenConfiguration() {
     PanFormatter formatter = new PanFormatter("conf.csv");
     String input = "4444444444444444";
     assertThat(formatter.formatPan(input))
@@ -17,7 +15,7 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanFailsWhenThereIsNoMatchingRecordFoundInConfiguration() throws ParseException {
+  void formatPanFailsWhenThereIsNoMatchingRecordFoundInConfiguration() {
     PanFormatter formatter = new PanFormatter("conf.csv");
     String input = "23";
     assertThatThrownBy(() -> formatter.formatPan(input))
@@ -27,7 +25,7 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanFailsWhenThereIsMoreThanOneMatchOnConfigurationRecords() throws ParseException {
+  void formatPanFailsWhenThereIsMoreThanOneMatchOnConfigurationRecords() {
     PanFormatter formatter = new PanFormatter("configWithDuplicatedRecord.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
@@ -38,7 +36,7 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanThrowsExceptionWhenThereAreNoValidRecordsInConfig() throws ParseException {
+  void formatPanThrowsExceptionWhenThereAreNoValidRecordsInConfig() {
     PanFormatter formatter = new PanFormatter("configWithNoValidRecords.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
@@ -48,7 +46,7 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanThrowsExceptionWhenConfigDoesNotExist() throws ParseException {
+  void formatPanThrowsExceptionWhenConfigDoesNotExist() {
     PanFormatter formatter = new PanFormatter("configFileThatDoesNotExist.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
@@ -58,7 +56,7 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanThrowsExceptionWhenConfigFileIsEmpty() throws ParseException {
+  void formatPanThrowsExceptionWhenConfigFileIsEmpty() {
     PanFormatter formatter = new PanFormatter("emptyConfig.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
