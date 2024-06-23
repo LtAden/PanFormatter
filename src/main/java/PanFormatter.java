@@ -29,8 +29,10 @@ public class PanFormatter {
   /**
    * Validates PAN Number. If it is supported returns formatted PAN. Otherwise, raises exception.
    *
+   * @param panNumber - pan Number which is to be formatted
    * @return PAN number formatted to found format
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
+   * @throws ParseException - when there was a problem during parsing
    */
   public String formatPan(String panNumber) throws ParseException {
     if (this.configs == null) {
@@ -60,6 +62,7 @@ public class PanFormatter {
    * Reads config file from resources, takes headers line as a source of map keys, and then converts
    * all the lines in the file to arrays, maps them using headers and collects them to a list.
    *
+   * @throws IOException - if file is not found
    * @return List of Maps from provided config CSV
    */
   private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
@@ -109,6 +112,8 @@ public class PanFormatter {
    * Iterates through the list of InnConfs, and tries to match provided pan number to any of them.
    * It adds all Patterns from InnConf objects that match given pan to a list.
    *
+   * @param panNumber - pan number for which a formatting pattern should be found
+   * @param listOfInnConfs - list of InnConf objects read from configuration to be checked against
    * @throws UnsupportedOperationException - if none of InnConf match given pan number (empty map)
    * @throws IllegalStateException - if more than one InnConf matches given pan number (map size
    *     bigger than 1)
@@ -158,6 +163,7 @@ public class PanFormatter {
    * <p>Any failure is logged, but following checks are still evaluated - this way all mistakes for
    * given record can be fixed right away.
    *
+   * @param innConf - innConf object to be validated
    * @return true if no problems were found, false otherwise
    */
   private boolean isInnConfObjectValid(InnConf innConf) {
