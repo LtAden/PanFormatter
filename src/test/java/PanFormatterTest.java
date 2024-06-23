@@ -48,11 +48,21 @@ class PanFormatterTest {
   }
 
   @Test
-  void formatPanThrowsExceptionWhenConfigFileIsEmpty() throws ParseException {
+  void formatPanThrowsExceptionWhenConfigDoesNotExist() throws ParseException {
     PanFormatter formatter = new PanFormatter("configFileThatDoesNotExist.csv");
     String input = "4444444444444444";
     assertThatThrownBy(() -> formatter.formatPan(input))
-        .as("Check if exception is thrown when there are no valid records in config file")
+        .as("Check if exception is thrown when there is no config file")
+        .hasMessage("Config file empty or does not exist")
+        .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void formatPanThrowsExceptionWhenConfigFileIsEmpty() throws ParseException {
+    PanFormatter formatter = new PanFormatter("emptyConfig.csv");
+    String input = "4444444444444444";
+    assertThatThrownBy(() -> formatter.formatPan(input))
+        .as("Check if exception is thrown when config file is empty")
         .hasMessage("Config file empty or does not exist")
         .isInstanceOf(IllegalStateException.class);
   }
