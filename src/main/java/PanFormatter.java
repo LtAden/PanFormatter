@@ -1,10 +1,8 @@
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 
+import model.InnConf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -211,28 +209,5 @@ public class PanFormatter {
     MaskFormatter formatter = new MaskFormatter(pattern);
     formatter.setValueContainsLiteralCharacters(false);
     return formatter.valueToString(panNumber);
-  }
-
-  @Data
-  @AllArgsConstructor
-  private static class InnConf {
-
-    /** Name of institution that issues a card. */
-    private String issuerName;
-
-    /** Supported length of PAN Number. */
-    private int supportedLength;
-
-    /** Supported prefix length to check IIN Range. */
-    private int prefixLength;
-
-    /** Min value of a prefix. */
-    private int innPrefixLow;
-
-    /** Max value of a prefix. */
-    private int innPrefixHigh;
-
-    /** PAN Pattern for formatting. */
-    private String panPattern;
   }
 }
