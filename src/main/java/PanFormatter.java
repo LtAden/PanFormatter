@@ -1,27 +1,19 @@
-import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 
-import innConfValidator.InnConfValidator;
-import innConfValidator.InnConfValidatorHandler;
+import innConfValidator.configurationProvider.ConfigurationProvider;
 import model.InnConf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.text.MaskFormatter;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
-  private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
-  private static final String CONFIG_FILE_SEPARATOR = ";";
-
   private List<InnConf> configs;
 
-  public PanFormatter(String configFileName) {
-    this.confFile = configFileName;
+  public PanFormatter(ConfigurationProvider configurationProvider, String configFileName) {
+    this.configs = configurationProvider.getConfiguration(configFileName);
   }
 
   /**
@@ -32,82 +24,12 @@ public class PanFormatter {
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
    */
   public String formatPan(String panNumber) {
-    if (this.configs == null) {
-      this.configs = getConfiguration();
-    }
     String pattern = findPatternFromRecordThatMatchesPanOrThrowException(configs, panNumber);
     try {
       return formatPanWithGivenPattern(panNumber, pattern);
     } catch (ParseException e) {
       throw new UnsupportedOperationException("Failed to parse pan number to format: ", e);
     }
-  }
-
-  /**
-   * Reads configuration from CSV file and map it to list of {@link InnConf} objects.
-   *
-   * @return Configuration of supported patterns related to IIN Ranges.
-   * @throws IllegalStateException - when config file could not be found or is empty
-   */
-  private List<InnConf> getConfiguration() {
-    List<Map<String, String>> listOfMappedRecords;
-    try {
-      listOfMappedRecords = getListOfMappedRecordsFromConfigFile();
-    } catch (Exception e) {
-      throw new IllegalStateException("Config file empty or does not exist");
-    }
-    return getListOfValidInnConfObjectsFromMappedRecords(listOfMappedRecords);
-  }
-
-  /**
-   * Reads config file from resources, takes headers line as a source of map keys, and then converts
-   * all the lines in the file to arrays, maps them using headers and collects them to a list.
-   *
-   * @throws IOException - when there was a problem reading a file
-   * @throws NullPointerException - when file is missing or empty
-   * @return List of Maps from provided config CSV
-   */
-  private List<Map<String, String>> getListOfMappedRecordsFromConfigFile() throws IOException {
-    try (BufferedReader reader =
-        new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(confFile)))) {
-      String[] csvHeaders = reader.readLine().split(CONFIG_FILE_SEPARATOR);
-      return reader
-          .lines()
-          .map(line -> line.split(CONFIG_FILE_SEPARATOR))
-          .map(
-              csvLineArray ->
-                  IntStream.range(0, csvLineArray.length)
-                      .boxed()
-                      .collect(toMap(i -> csvHeaders[i], i -> csvLineArray[i])))
-          .toList();
-    }
-  }
-
-  private List<InnConf> getListOfValidInnConfObjectsFromMappedRecords(
-      List<Map<String, String>> listOfMappedRecords) {
-    InnConf innConf;
-    List<InnConf> result = new ArrayList<>();
-    for (Map<String, String> map : listOfMappedRecords) {
-      innConf = getInnConfObjectFromMap(map);
-      if (isInnConfObjectValid(innConf)) {
-        result.add(innConf);
-      }
-    }
-    if (result.isEmpty()) {
-      throw new IllegalStateException(
-          "No valid InnConf objects could be collected from provided config file");
-    }
-    return result;
-  }
-
-  private InnConf getInnConfObjectFromMap(Map<String, String> map) {
-    return new InnConf(
-        map.get("Issuer Name"),
-        Integer.parseInt(map.get("supported pan length")),
-        Integer.parseInt(map.get("prefixLength")),
-        Integer.parseInt(map.get("innRangeLow")),
-        Integer.parseInt(map.get("innRangeHigh")),
-        map.get("pattern"));
   }
 
   /**
@@ -149,29 +71,6 @@ public class PanFormatter {
     int panNumberPrefixValue = Integer.parseInt(panNumberPrefix);
     return (panNumberPrefixValue >= innConf.getInnPrefixLow())
         && (panNumberPrefixValue <= innConf.getInnPrefixHigh());
-  }
-
-  /**
-   * Preforms a few checks on InnConf objects to confirm it's valid. It checks that InnObject: - Pan
-   * Patter is a series of Placeholer characters (#) and Spaces; - That amount of Placeholder
-   * characters in Pan Pattern match the supported pan length - that prefix size is just as long as
-   * both inn range parameters - that prefix is not longer than supported pan length
-   *
-   * <p>Any failure is logged, but following checks are still evaluated - this way all mistakes for
-   * given record can be fixed right away.
-   *
-   * @param innConf - innConf object to be validated
-   * @return true if no problems were found, false otherwise
-   */
-  private boolean isInnConfObjectValid(InnConf innConf) {
-    List<String> issuesFound = new ArrayList<>();
-    InnConfValidatorHandler validatorChain = InnConfValidator.getValidationChain();
-    validatorChain.validate(innConf, issuesFound);
-    if (issuesFound.size() > 0) {
-      LOGGER.info("Following issues were found for InnConf object {}: {}", innConf, issuesFound);
-      return false;
-    }
-    return true;
   }
 
   private boolean doesInnRangeSizesMatchPrefixSize(InnConf innConf) {
