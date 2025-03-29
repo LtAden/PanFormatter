@@ -142,13 +142,7 @@ public class PanFormatter {
   }
 
   private boolean doesPanMatchInnConfConstraints(String panNumber, InnConf innConf) {
-    boolean result = true;
-    if (!(panNumber.length() == innConf.getSupportedLength())) {
-      result = false;
-    } else if (!isPanNumberPrefixInRange(panNumber, innConf)) {
-      result = false;
-    }
-    return result;
+    return (panNumber.length() == innConf.getSupportedLength()) && isPanNumberPrefixInRange(panNumber, innConf);
   }
 
   private boolean isPanNumberPrefixInRange(String panNumber, InnConf innConf) {
