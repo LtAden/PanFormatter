@@ -2,6 +2,8 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 
+import innConfValidator.InnConfValidator;
+import innConfValidator.InnConfValidatorHandler;
 import model.InnConf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,12 +14,10 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toMap;
 
 public class PanFormatter {
-  private static final String COMMA_SEPARATOR = ",";
   private final String confFile;
   private static final Logger LOGGER = LogManager.getLogger(PanFormatter.class);
-  private static final String EXPECTED_PATTERN_REGEX = "^#[#\\s]*$";
   private static final String CONFIG_FILE_SEPARATOR = ";";
-  private static final char PATTERN_PLACEHOLDER_CHARACTER = '#';
+
   private List<InnConf> configs;
 
   public PanFormatter(String configFileName) {
@@ -31,7 +31,7 @@ public class PanFormatter {
    * @return PAN number formatted to found format
    * @throws UnsupportedOperationException - when PAN Number is not supported by configuration
    */
-  public String formatPan(String panNumber){
+  public String formatPan(String panNumber) {
     if (this.configs == null) {
       this.configs = getConfiguration();
     }
@@ -140,7 +140,8 @@ public class PanFormatter {
   }
 
   private boolean doesPanMatchInnConfConstraints(String panNumber, InnConf innConf) {
-    return (panNumber.length() == innConf.getSupportedLength()) && isPanNumberPrefixInRange(panNumber, innConf);
+    return (panNumber.length() == innConf.getSupportedLength())
+        && isPanNumberPrefixInRange(panNumber, innConf);
   }
 
   private boolean isPanNumberPrefixInRange(String panNumber, InnConf innConf) {
@@ -163,39 +164,14 @@ public class PanFormatter {
    * @return true if no problems were found, false otherwise
    */
   private boolean isInnConfObjectValid(InnConf innConf) {
-    boolean result = true;
-    StringBuilder issuesFound = new StringBuilder();
-    if (!doesPanPatternMatchExpectedRegex(innConf)) {
-      issuesFound.append("Invalid pan pattern").append(COMMA_SEPARATOR);
-      result = false;
-    } else if (!doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(innConf)) {
-      issuesFound
-          .append("Amount of placeholder characters doesn't match supported pan size ")
-          .append(COMMA_SEPARATOR);
-      result = false;
-    }
-    if (!doesInnRangeSizesMatchPrefixSize(innConf)) {
-      issuesFound.append("InnRange sizes doesn't match prefix size").append(COMMA_SEPARATOR);
-      result = false;
-    }
-    if (innConf.getPrefixLength() > innConf.getSupportedLength()) {
-      issuesFound.append("Prefix size is bigger than supported pan length").append(COMMA_SEPARATOR);
-      result = false;
-    }
-    if (!result) {
+    List<String> issuesFound = new ArrayList<>();
+    InnConfValidatorHandler validatorChain = InnConfValidator.getValidationChain();
+    validatorChain.validate(innConf, issuesFound);
+    if (issuesFound.size() > 0) {
       LOGGER.info("Following issues were found for InnConf object {}: {}", innConf, issuesFound);
+      return false;
     }
-    return result;
-  }
-
-  private boolean doesPanPatternMatchExpectedRegex(InnConf innConf) {
-    return innConf.getPanPattern().matches(EXPECTED_PATTERN_REGEX);
-  }
-
-  private boolean doesAmountOfPatternPlaceholderCharactersMatchSupportedPanLength(InnConf innConf) {
-    long xCountInPattern =
-        innConf.getPanPattern().chars().filter(ch -> ch == PATTERN_PLACEHOLDER_CHARACTER).count();
-    return xCountInPattern == innConf.getSupportedLength();
+    return true;
   }
 
   private boolean doesInnRangeSizesMatchPrefixSize(InnConf innConf) {
